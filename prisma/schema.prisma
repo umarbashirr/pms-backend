@@ -1,0 +1,75 @@
+
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id String @id @unique @default(cuid())
+  name String
+  email String @unique
+  password String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  properties UserProperty[]
+}
+
+model Property {
+  id Int @id @default(autoincrement())
+  name String
+  email String
+  phoneNumber String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users UserProperty[] // Contains many users
+  roomTypes RoomType[] // Contains many room types
+}
+
+model UserProperty {
+  userId String
+  propertyId Int
+  userRef User @relation(fields: [userId], references: [id])
+  propertyRef Property @relation(fields: [propertyId], references: [id])
+  role UserPropertyRole @default(FRONT_OFFICE)
+
+  @@id([userId, propertyId]) 
+}
+
+enum UserPropertyRole {
+  FRONT_OFFICE
+  RESERVATION
+  HOTEL_MANAGER
+  FINANCE
+  BOT
+  ADMIN
+  SUPER_ADMIN
+  HOUSE_KEEPING
+  RESTAURANT
+}
+
+model RoomType {
+  id String @id @default(cuid())
+  name String
+  code String
+  basePrice Float
+  children Int
+  adults Int
+  maxAllowed Int
+  amenities String[]
+  isActive Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+
+  // Belong to Single Property
+  propertyId Int
+  propertyRef Property @relation(fields: [propertyId], references: [id])
+}
