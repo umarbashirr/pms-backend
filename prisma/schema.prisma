@@ -1,5 +1,3 @@
-
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,37 +8,43 @@ datasource db {
 }
 
 model User {
-  id String @id @unique @default(cuid())
-  name String
-  email String @unique
-  password String?
+  id        String   @id @unique @default(cuid())
+  name      String
+  email     String   @unique
+  password  String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  properties UserProperty[]
+  properties            UserProperty[]
+  createdGuestProfiles  GuestProfile[]  @relation("CreatedByRelation")
+  updatedGuestProfiles  GuestProfile[]  @relation("UpdatedByRelation")
+  createdBookerProfiles BookerProfile[] @relation("CreatedByRelation")
+  updatedBookerProfiles BookerProfile[] @relation("UpdatedByRelation")
 }
 
 model Property {
-  id Int @id @default(autoincrement())
-  name String
-  email String
+  id          Int      @id @default(autoincrement())
+  name        String
+  email       String
   phoneNumber String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  users UserProperty[] // Contains many users
-  roomTypes RoomType[] // Contains many room types
-  rooms Room[] // Contains many rooms
+  users          UserProperty[] // Contains many users
+  roomTypes      RoomType[] // Contains many room types
+  rooms          Room[] // Contains many rooms
+  bookerProfiles BookerProfile[]
+  guestProfiles  GuestProfile[]
 }
 
 model UserProperty {
-  userId String
-  propertyId Int
-  userRef User @relation(fields: [userId], references: [id])
-  propertyRef Property @relation(fields: [propertyId], references: [id])
-  role UserPropertyRole @default(FRONT_OFFICE)
+  userId      String
+  propertyId  Int
+  userRef     User             @relation(fields: [userId], references: [id])
+  propertyRef Property         @relation(fields: [propertyId], references: [id])
+  role        UserPropertyRole @default(FRONT_OFFICE)
 
-  @@id([userId, propertyId]) 
+  @@id([userId, propertyId])
 }
 
 enum UserPropertyRole {
@@ -56,22 +60,22 @@ enum UserPropertyRole {
 }
 
 model RoomType {
-  id String @id @default(cuid())
-  name String
-  code String
-  basePrice Float
-  children Int
-  adults Int
+  id         String   @id @default(cuid())
+  name       String
+  code       String
+  basePrice  Float
+  children   Int
+  adults     Int
   maxAllowed Int
-  amenities String[]
-  isActive Boolean @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  amenities  String[]
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   // Relations
 
   // Belong to Single Property
-  propertyId Int
+  propertyId  Int
   propertyRef Property @relation(fields: [propertyId], references: [id])
 
   // Has many Rooms
@@ -79,20 +83,106 @@ model RoomType {
 }
 
 model Room {
-  id String @id @default(cuid())
+  id         String   @id @default(cuid())
   roomNumber String
-  roomCode String
-  floor Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  isActive Boolean @default(true)
+  roomCode   String
+  floor      Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  isActive   Boolean  @default(true)
   // Relations
 
   // Belong to Single Property
-  propertyId Int
+  propertyId  Int
   propertyRef Property @relation(fields: [propertyId], references: [id])
 
   // Belong to Single Room Type
-  roomTypeId String
+  roomTypeId  String
   roomTypeRef RoomType @relation(fields: [roomTypeId], references: [id])
+}
+
+model GuestProfile {
+  id           Int                   @id @default(autoincrement())
+  propertyId   Int
+  firstName    String
+  lastName     String
+  email        String
+  phoneNumber  String?
+  // Address
+  dob          String?
+  addressLine1 String?
+  addressLine2 String?
+  city         String?
+  state        String?
+  country      String
+  pincode      String?
+  // Verification
+  idType       VERIFICATION_ID_TYPE?
+  idNumber     String?
+  placeOfIssue String?
+  dateOfIssue  String?
+  dateOfExpiry String?
+  // Other
+  isSuspended  Boolean               @default(false)
+  notes        String?
+
+  // Time Stamps
+  // Timestamp
+  createdBy String?
+  createdAt DateTime @default(now())
+  updatedBy String?
+  updatedAt DateTime @updatedAt
+
+  propertyRef   Property @relation(fields: [propertyId], references: [id])
+  createdByUser User?    @relation("CreatedByRelation", fields: [createdBy], references: [id], onDelete: SetNull)
+  updatedByUser User?    @relation("UpdatedByRelation", fields: [updatedBy], references: [id], onDelete: SetNull)
+}
+
+enum VERIFICATION_ID_TYPE {
+  PASSPORT
+  ADHAAR
+  VORTER_CARD
+  DRIVING_LICENSE
+  OTHER
+}
+
+model BookerProfile {
+  id          Int     @id @default(autoincrement())
+  propertyId  Int
+  firstName   String
+  lastName    String
+  companyName String?
+  phoneNumber String?
+  email       String
+
+  // For GST
+  gstBeneficiary  String?
+  gstNumber       String?
+  gstAddressLine1 String?
+  gstAddressLine2 String?
+  gstState        String?
+  gstPincode      String?
+
+  // Company Address
+  addressLine1 String?
+  addressLine2 String?
+  city         String?
+  state        String?
+  country      String?
+  pincode      String?
+
+  // Other 
+  isSuspended  Boolean @default(false)
+  notes        String?
+  isBTCAllowed Boolean @default(false)
+
+  // Timestamp
+  createdBy String?
+  createdAt DateTime @default(now())
+  updatedBy String?
+  updatedAt DateTime @updatedAt
+
+  propertyRef   Property @relation(fields: [propertyId], references: [id])
+  createdByUser User?    @relation("CreatedByRelation", fields: [createdBy], references: [id], onDelete: SetNull)
+  updatedByUser User?    @relation("UpdatedByRelation", fields: [updatedBy], references: [id], onDelete: SetNull)
 }

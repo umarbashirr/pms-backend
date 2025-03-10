@@ -23,3 +23,10 @@
 - Get all rooms by property ID
 - Get all rooms by property ID & room type ID
 - Get single room by Property ID & roomTypeID & roomId
+
+### Profile
+
+- Create Guest / Booker Profile
+- Update Guest / Booker Profile
+- Get Guest Profils by firstName, lastName, email, phoneNumber
+- Get Booker Profils by firstName, lastName, email, phoneNumber, companyName

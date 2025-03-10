@@ -9,6 +9,7 @@ const propertyRoutes = require("./routes/property.routes");
 const authRoutes = require("./routes/auth.routes");
 const roomTypeRoutes = require("./routes/room-type.routes");
 const roomRoutes = require("./routes/room.routes");
+const profileRoutes = require("./routes/profile.routes");
 
 const app = express();
 const port = process.env.PORT || 8000;
@@ -30,6 +31,7 @@ app.use("/api/v1/properties", propertyRoutes);
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/properties/:propertyId/room-types", roomTypeRoutes);
 app.use("/api/v1/properties", roomRoutes);
+app.use("/api/v1/properties", profileRoutes);
 
 app.listen(port, () => {
   console.log(`Server started running on port ${port}...`);
