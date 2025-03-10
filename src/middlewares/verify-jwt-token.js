@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const asyncHandler = require("express-async-handler");
+const prisma = require("../lib/prisma");
 
 const verifyToken = asyncHandler(async (req, res, next) => {
   let token = req.header("Authorization")?.split(" ")[1];
@@ -19,7 +20,20 @@ const verifyToken = asyncHandler(async (req, res, next) => {
     const secretKey = process.env.JWT_ACCESS_SECRET; // Load secret key from .env
     const decoded = jwt.verify(token, secretKey); // Verify the token
 
-    req.user = decoded; // Attach decoded user info to req.user
+    const userProperty = await prisma.userProperty.findFirst({
+      where: {
+        userId: decoded.userId,
+        propertyId: decoded.propertyId,
+      },
+    });
+
+    if (!userProperty) {
+      return res
+        .status(403)
+        .json({ error: "You do not have any access to this property!" });
+    }
+
+    req.user = decoded;
     next();
   } catch (error) {
     res.status(403).json({ message: "Invalid or Expired Token" });

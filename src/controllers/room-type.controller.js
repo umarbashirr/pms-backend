@@ -23,7 +23,7 @@ const CreateRoomType = asyncHandler(async (req, res) => {
       maxAllowed,
       isActive,
       amenities: [],
-      propertyId,
+      propertyId: parseInt(propertyId),
     },
   });
 
@@ -34,6 +34,51 @@ const CreateRoomType = asyncHandler(async (req, res) => {
   res.status(201).json({ message: "Room type created!", data: roomType });
 });
 
+const GetRoomTypesByPropertyId = asyncHandler(async (req, res) => {
+  const { propertyId } = req.params;
+
+  if (!propertyId) {
+    return res.status(401).json({ error: "Property ID is missing!" });
+  }
+
+  const roomTypes = await prisma.roomType.findMany({
+    where: {
+      propertyId: parseInt(propertyId),
+    },
+  });
+
+  res
+    .status(200)
+    .json({ message: "Room Types fetched successfully!", data: roomTypes });
+});
+
+const GetSingleRoomTypeByPropertyId = asyncHandler(async (req, res) => {
+  const { propertyId, roomTypeId } = req.params;
+
+  if (!propertyId || !roomTypeId) {
+    return res
+      .status(401)
+      .json({ error: "Either Property ID or Room Type ID is missing!" });
+  }
+
+  const roomType = await prisma.roomType.findUnique({
+    where: {
+      propertyId: parseInt(propertyId),
+      id: roomTypeId,
+    },
+  });
+
+  if (!roomType) {
+    return res.status(404).json({ error: "No such room type found!" });
+  }
+
+  res
+    .status(200)
+    .json({ message: "Room Type fetched successfully!", data: roomType });
+});
+
 module.exports = {
   CreateRoomType,
+  GetRoomTypesByPropertyId,
+  GetSingleRoomTypeByPropertyId,
 };
