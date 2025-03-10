@@ -3,11 +3,12 @@ const express = require("express");
 const cookieParser = require("cookie-parser");
 const helmet = require("helmet");
 const cors = require("cors");
-const loggerMiddleware = require("./helpers/logger");
+const loggerMiddleware = require("./middlewares/logger");
 
 const propertyRoutes = require("./routes/property.routes");
 const authRoutes = require("./routes/auth.routes");
 const roomTypeRoutes = require("./routes/room-type.routes");
+const roomRoutes = require("./routes/room.routes");
 
 const app = express();
 const port = process.env.PORT || 8000;
@@ -28,6 +29,7 @@ app.get("/", (req, res) => {
 app.use("/api/v1/properties", propertyRoutes);
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/properties/:propertyId/room-types", roomTypeRoutes);
+app.use("/api/v1/properties", roomRoutes);
 
 app.listen(port, () => {
   console.log(`Server started running on port ${port}...`);

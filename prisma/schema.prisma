@@ -30,6 +30,7 @@ model Property {
 
   users UserProperty[] // Contains many users
   roomTypes RoomType[] // Contains many room types
+  rooms Room[] // Contains many rooms
 }
 
 model UserProperty {
@@ -72,4 +73,26 @@ model RoomType {
   // Belong to Single Property
   propertyId Int
   propertyRef Property @relation(fields: [propertyId], references: [id])
+
+  // Has many Rooms
+  rooms Room[]
+}
+
+model Room {
+  id String @id @default(cuid())
+  roomNumber String
+  roomCode String
+  floor Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  isActive Boolean @default(true)
+  // Relations
+
+  // Belong to Single Property
+  propertyId Int
+  propertyRef Property @relation(fields: [propertyId], references: [id])
+
+  // Belong to Single Room Type
+  roomTypeId String
+  roomTypeRef RoomType @relation(fields: [roomTypeId], references: [id])
 }
