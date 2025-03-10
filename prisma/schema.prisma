@@ -20,6 +20,9 @@ model User {
   updatedGuestProfiles  GuestProfile[]  @relation("UpdatedByRelation")
   createdBookerProfiles BookerProfile[] @relation("CreatedByRelation")
   updatedBookerProfiles BookerProfile[] @relation("UpdatedByRelation")
+
+  createdRatePlans RatePlan[] @relation("CreatedByRelation")
+  updatedRatePlans RatePlan[] @relation("UpdatedByRelation")
 }
 
 model Property {
@@ -35,6 +38,7 @@ model Property {
   rooms          Room[] // Contains many rooms
   bookerProfiles BookerProfile[]
   guestProfiles  GuestProfile[]
+  ratePlans      RatePlan[]
 }
 
 model UserProperty {
@@ -175,6 +179,27 @@ model BookerProfile {
   isSuspended  Boolean @default(false)
   notes        String?
   isBTCAllowed Boolean @default(false)
+
+  // Timestamp
+  createdBy String?
+  createdAt DateTime @default(now())
+  updatedBy String?
+  updatedAt DateTime @updatedAt
+
+  propertyRef   Property @relation(fields: [propertyId], references: [id])
+  createdByUser User?    @relation("CreatedByRelation", fields: [createdBy], references: [id], onDelete: SetNull)
+  updatedByUser User?    @relation("UpdatedByRelation", fields: [updatedBy], references: [id], onDelete: SetNull)
+}
+
+model RatePlan {
+  id          String  @id @default(cuid())
+  propertyId  Int
+  name        String
+  code        String
+  rate        Float
+  tax         Float
+  totalAmount Float
+  isActive    Boolean @default(true)
 
   // Timestamp
   createdBy String?
