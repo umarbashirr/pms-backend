@@ -124,7 +124,7 @@ const AdminLogin = asyncHandler(async (req, res) => {
     secure: process.env.NODE_ENV === "production",
   });
 
-  res.status(200).json({ message: "Logged In Successfully!" });
+  res.status(200).json({ message: "Logged In Successfully!", token });
 });
 
 module.exports = {
