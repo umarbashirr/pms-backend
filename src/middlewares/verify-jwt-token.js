@@ -3,12 +3,8 @@ const asyncHandler = require("express-async-handler");
 const prisma = require("../lib/prisma");
 
 const verifyToken = asyncHandler(async (req, res, next) => {
-  let token = req.header("Authorization")?.split(" ")[1];
-
-  // If token is not in header, check cookies
-  if (!token && req.cookies?.token) {
-    token = req.cookies["pms-token"];
-  }
+  let token =
+    req.cookies["pms-token"] || req.header("Authorization")?.split(" ")[1];
 
   if (!token) {
     return res

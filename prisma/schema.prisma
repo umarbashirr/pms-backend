@@ -7,13 +7,25 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserMainRoleEnum {
+  SUPER_ADMIN
+  ADMIN
+  USER
+}
+
 model User {
-  id        String   @id @unique @default(cuid())
-  name      String
-  email     String   @unique
-  password  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                        String           @id @unique @default(cuid())
+  name                      String
+  email                     String           @unique
+  password                  String?
+  role                      UserMainRoleEnum @default(USER)
+  isActive                  Boolean          @default(true)
+  forgotPasswordToken       String?
+  forgotPasswordTokenExpiry String?
+  confirmationToken         String?
+  confirmationTokenExpiry   String?
+  createdAt                 DateTime         @default(now())
+  updatedAt                 DateTime         @updatedAt
 
   properties            UserProperty[]
   createdGuestProfiles  GuestProfile[]  @relation("CreatedByRelation")
@@ -26,12 +38,17 @@ model User {
 }
 
 model Property {
-  id          Int      @id @default(autoincrement())
-  name        String
-  email       String
-  phoneNumber String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                   String    @id @default(cuid())
+  propertyCode         String
+  name                 String
+  email                String
+  phoneNumber          String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  isMembershipExpired  Boolean   @default(false)
+  membershipExpireDate DateTime?
+  isActive             Boolean   @default(true)
+  isLaunched           Boolean   @default(false)
 
   users          UserProperty[] // Contains many users
   roomTypes      RoomType[] // Contains many room types
@@ -43,7 +60,7 @@ model Property {
 
 model UserProperty {
   userId      String
-  propertyId  Int
+  propertyId  String
   userRef     User             @relation(fields: [userId], references: [id])
   propertyRef Property         @relation(fields: [propertyId], references: [id])
   role        UserPropertyRole @default(FRONT_OFFICE)
@@ -56,9 +73,7 @@ enum UserPropertyRole {
   RESERVATION
   HOTEL_MANAGER
   FINANCE
-  BOT
   ADMIN
-  SUPER_ADMIN
   HOUSE_KEEPING
   RESTAURANT
 }
@@ -79,7 +94,7 @@ model RoomType {
   // Relations
 
   // Belong to Single Property
-  propertyId  Int
+  propertyId  String
   propertyRef Property @relation(fields: [propertyId], references: [id])
 
   // Has many Rooms
@@ -97,7 +112,7 @@ model Room {
   // Relations
 
   // Belong to Single Property
-  propertyId  Int
+  propertyId  String
   propertyRef Property @relation(fields: [propertyId], references: [id])
 
   // Belong to Single Room Type
@@ -107,7 +122,7 @@ model Room {
 
 model GuestProfile {
   id           Int                   @id @default(autoincrement())
-  propertyId   Int
+  propertyId   String
   firstName    String
   lastName     String
   email        String
@@ -152,7 +167,7 @@ enum VERIFICATION_ID_TYPE {
 
 model BookerProfile {
   id          Int     @id @default(autoincrement())
-  propertyId  Int
+  propertyId  String
   firstName   String
   lastName    String
   companyName String?
@@ -193,7 +208,7 @@ model BookerProfile {
 
 model RatePlan {
   id          String  @id @default(cuid())
-  propertyId  Int
+  propertyId  String
   name        String
   code        String
   rate        Float

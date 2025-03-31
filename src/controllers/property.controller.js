@@ -126,14 +126,19 @@ const GetUsersWithRoleByPropertyId = asyncHandler(async (req, res) => {
       },
     })
     .then((data) =>
-      data.map((item) => ({
-        id: item.userRef.id,
-        name: item.userRef.name,
-        email: item.userRef.email,
-        role: item.role,
-        createdAt: item.userRef.createdAt,
-        updatedAt: item.userRef.updatedAt,
-      }))
+      data
+        .map(
+          (item) =>
+            item.role !== "BOT" && {
+              id: item.userRef.id,
+              name: item.userRef.name,
+              email: item.userRef.email,
+              role: item.role,
+              createdAt: item.userRef.createdAt,
+              updatedAt: item.userRef.updatedAt,
+            }
+        )
+        .filter(Boolean)
     );
 
   res.status(200).json({ message: "User fetched successfully", users });

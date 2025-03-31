@@ -83,7 +83,53 @@ const LogoutUser = asyncHandler(async (req, res) => {
   return res.status(200).json({ message: "Logged Out" });
 });
 
+const getCurrentUser = asyncHandler(async (req, res) => {
+  const user = req.user;
+  return res.status(200).json({ user });
+});
+
+const AdminLogin = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ error: "Missing input" });
+  }
+
+  const user = await prisma.user.findFirst({
+    where: {
+      email,
+    },
+  });
+
+  if (!user) {
+    return res.status(400).json({ error: "No such user found!" });
+  }
+
+  if (user.role === "USER") {
+    return res.status(400).json({ error: "Not allowed to login here!" });
+  }
+
+  const isPasswordMatched = await bcrypt.compare(password, user.password);
+
+  if (!isPasswordMatched) {
+    return res.status(400).json({ error: "Invalid Password" });
+  }
+
+  const token = await jwt.sign({ id: user.id }, process.env.JWT_ACCESS_SECRET, {
+    expiresIn: "1d",
+  });
+
+  res.cookie("pms-token", token, {
+    httpOnly: process.env.NODE_ENV === "production",
+    secure: process.env.NODE_ENV === "production",
+  });
+
+  res.status(200).json({ message: "Logged In Successfully!" });
+});
+
 module.exports = {
   LoginUser,
   LogoutUser,
+  getCurrentUser,
+  AdminLogin,
 };

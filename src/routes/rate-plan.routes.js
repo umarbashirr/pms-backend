@@ -23,7 +23,7 @@ router
 
 router
   .route("/:propertyId/rate-plan/:planId")
-  .update(
+  .put(
     verifyToken,
     verifySuperAdminRights,
     validateSchema(RatePlanSchema),
