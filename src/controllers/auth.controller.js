@@ -68,7 +68,7 @@ const LoginUser = asyncHandler(async (req, res) => {
     expiresIn: "1d",
   });
 
-  await res.cookie("pms-token", token, {
+  await res.cookie("client-pms-token", token, {
     secure: process.env.NODE_ENV === "production",
     httpOnly: process.env.NODE_ENV === "production",
     sameSite: "lax",
@@ -79,6 +79,11 @@ const LoginUser = asyncHandler(async (req, res) => {
 });
 
 const LogoutUser = asyncHandler(async (req, res) => {
+  await res.clearCookie("client-pms-token");
+  return res.status(200).json({ message: "Logged Out" });
+});
+
+const AdminLogout = asyncHandler(async (req, res) => {
   await res.clearCookie("pms-token");
   return res.status(200).json({ message: "Logged Out" });
 });
@@ -115,9 +120,13 @@ const AdminLogin = asyncHandler(async (req, res) => {
     return res.status(400).json({ error: "Invalid Password" });
   }
 
-  const token = await jwt.sign({ id: user.id }, process.env.JWT_ACCESS_SECRET, {
-    expiresIn: "1d",
-  });
+  const token = await jwt.sign(
+    { id: user.id },
+    process.env.JWT_ADMIN_ACCESS_SECRET,
+    {
+      expiresIn: "1d",
+    }
+  );
 
   res.cookie("pms-token", token, {
     httpOnly: process.env.NODE_ENV === "production",
@@ -130,6 +139,7 @@ const AdminLogin = asyncHandler(async (req, res) => {
 module.exports = {
   LoginUser,
   LogoutUser,
+  AdminLogout,
   getCurrentUser,
   AdminLogin,
 };

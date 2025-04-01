@@ -1,6 +1,14 @@
+// lib/prisma.js or utils/prisma.js
+
 const { PrismaClient } = require("@prisma/client");
 const { withAccelerate } = require("@prisma/extension-accelerate");
 
-const prisma = new PrismaClient().$extends(withAccelerate());
+let globalForPrisma = globalThis;
 
-module.exports = prisma;
+const prismaClient =
+  globalForPrisma.prisma || new PrismaClient().$extends(withAccelerate());
+
+if (process.env.NODE_ENV !== "production")
+  globalForPrisma.prisma = prismaClient;
+
+module.exports = prismaClient;

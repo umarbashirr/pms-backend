@@ -44,6 +44,22 @@ model Property {
   name                 String
   email                String
   phoneNumber          String?
+  address              String?
+  city                 String?
+  state                String?
+  country              String?
+  pincode              String?
+  website              String?
+  mapURL               String?
+  checkInTime          String?
+  checkOutTime         String?
+  currency             String?
+  GSTIN                String?
+  beneficiaryName      String?
+  gstAddress1          String?
+  gstAddress2          String?
+  gstState             String?
+  gstPincode           String?
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
   isMembershipExpired  Boolean   @default(false)

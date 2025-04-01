@@ -2,10 +2,9 @@ const jwt = require("jsonwebtoken");
 const asyncHandler = require("express-async-handler");
 const prisma = require("../lib/prisma");
 
-const verifyToken = asyncHandler(async (req, res, next) => {
+const verifyAdminToken = asyncHandler(async (req, res, next) => {
   let token =
-    req.cookies["client-pms-token"] ||
-    req.header("Authorization")?.split(" ")[1];
+    req.cookies["pms-token"] || req.header("Authorization")?.split(" ")[1];
 
   if (!token) {
     return res
@@ -14,14 +13,21 @@ const verifyToken = asyncHandler(async (req, res, next) => {
   }
 
   try {
-    const secretKey = process.env.JWT_ACCESS_SECRET; // Load secret key from .env
+    const secretKey = process.env.JWT_ADMIN_ACCESS_SECRET; // Load secret key from .env
     const decoded = jwt.verify(token, secretKey); // Verify the token
 
-    req.user = decoded;
+    const user = await prisma.user.findUnique({
+      where: {
+        id: decoded.id,
+      },
+    });
+
+    req.user = user;
     next();
   } catch (error) {
+    console.error(error);
     res.status(403).json({ message: "Invalid or Expired Token" });
   }
 });
 
-module.exports = verifyToken;
+module.exports = verifyAdminToken;

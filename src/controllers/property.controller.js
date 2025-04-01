@@ -1,5 +1,5 @@
 const asyncHandler = require("express-async-handler");
-const { PropertySchema } = require("../schemas/property.schema");
+const { PropertyFormSchema } = require("../schemas/property.schema");
 const prisma = require("../lib/prisma");
 const bcrypt = require("bcryptjs");
 
@@ -10,7 +10,7 @@ const BotUser = {
 };
 
 const CreateNewProperty = asyncHandler(async (req, res) => {
-  const validatedFields = PropertySchema.safeParse(req.body);
+  const validatedFields = PropertyFormSchema.safeParse(req.body);
 
   if (!validatedFields.success) {
     return res
@@ -18,28 +18,9 @@ const CreateNewProperty = asyncHandler(async (req, res) => {
       .json({ error: "Invalid required Input", success: false });
   }
 
-  const { name, email, secretKey } = validatedFields.data;
-
-  if (secretKey !== process.env.HOTEL_SECRET_KEY) {
-    return res.status(400).json({ error: "Invalid Secret Key" });
-  }
-
-  const hashedPassword = await bcrypt.hash(BotUser.password, 10);
-
-  const bot = await prisma.user.upsert({
-    where: { email: BotUser.email },
-    update: {},
-    create: {
-      name: BotUser.name,
-      email: BotUser.email,
-      password: hashedPassword,
-    },
-  });
-
   const property = await prisma.property.create({
     data: {
-      name,
-      email,
+      ...validatedFields.data,
     },
   });
 
@@ -47,27 +28,13 @@ const CreateNewProperty = asyncHandler(async (req, res) => {
     return res.status(400).json({ error: "Error while creating property" });
   }
 
-  const userHotel = await prisma.userProperty.create({
-    data: {
-      userId: bot.id,
-      propertyId: property.id,
-      role: "BOT",
-    },
-  });
-
-  if (!userHotel) {
-    await prisma.property.delete({
-      where: {
-        id: property.id,
-      },
-    });
-
-    return res
-      .status(400)
-      .json({ error: "Error while attaching BOT to New Property" });
-  }
-
   return res.status(201).json({ message: "Property created" });
+});
+
+const GetAllProperties = asyncHandler(async (req, res) => {
+  const properties = await prisma.property.findMany();
+
+  return res.status(200).json({ properties, message: "Fetched successfully" });
 });
 
 const RegisterUserToProperty = asyncHandler(async (req, res) => {
@@ -146,6 +113,7 @@ const GetUsersWithRoleByPropertyId = asyncHandler(async (req, res) => {
 
 module.exports = {
   CreateNewProperty,
+  GetAllProperties,
   RegisterUserToProperty,
   GetUsersWithRoleByPropertyId,
 };
